@@ -1,20 +1,61 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# To-Do List App
 
-# Run and deploy your AI Studio app
+A modern To-Do List web application built with **React** and **TypeScript**.  
+This project provides a simple, responsive, and user-friendly interface to help users manage daily tasks effectively.  
 
-This contains everything you need to run your app locally.
+## 🚀 Features
+- Add, edit, and delete tasks
+- Responsive design for desktop and mobile
+- Built with React components for modularity
+- Type safety with TypeScript
+- Deployed on Vercel for fast and reliable access
 
-View your app in AI Studio: https://ai.studio/apps/drive/1B4er1Khruqt03WYgQxB7c3YJ9qv4t3DP
+## 🛠️ Tech Stack
+- **Frontend:** React, TypeScript, CSS  
+- **Deployment:** Vercel  
 
-## Run Locally
+## 📂 Project Structure
+```bash
+.
+├── public/
+├── src/
+│   ├── components/
+│   ├── App.tsx
+│   ├── index.tsx
+│   └── styles/
+├── package.json
+├── tsconfig.json
+└── README.md
+🌐 Live Demo
 
-**Prerequisites:**  Node.js
+👉 To-Do List App
+
+📸 Screenshots
+
+(Add screenshots to make it visually appealing, e.g. screenshot.png)
 
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+📦 Installation
+
+Clone the repository and run it locally:
+# Clone the repo
+git clone https://github.com/Kagisogotech/To-do-list.git
+
+# Navigate to project folder
+cd To-do-list
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+🤝 Contributing
+
+Contributions, issues, and feature requests are welcome.
+Feel free to fork this repo and open a pull request.
+
+📄 License
+
+This project is licensed under the MIT License.
+You are free to use, modify, and distribute this project.
+Made with ❤️ by Kagiso
