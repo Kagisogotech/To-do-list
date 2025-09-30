@@ -40,26 +40,41 @@ const stringToColor = (str: string) => {
 
 const TodoItem: React.FC<TodoItemProps> = ({ todo, toggleTodo, deleteTodo, updateTodo, onMouseEnter, isBlurred, isEditing, setEditingId }) => {
     const [editText, setEditText] = useState(todo.text);
-    const [editCategory, setEditCategory] = useState(todo.category || '');
+    const [editSelectedCategory, setEditSelectedCategory] = useState('');
+    const [editCustomCategory, setEditCustomCategory] = useState('');
     const [editDueDate, setEditDueDate] = useState(todo.dueDate || '');
     const [editPriority, setEditPriority] = useState(String(todo.priority));
 
+    const predefinedCategories = ['Work', 'Personal', 'Hobby'];
 
     useEffect(() => {
         if (isEditing) {
             setEditText(todo.text);
-            setEditCategory(todo.category || '');
             setEditDueDate(todo.dueDate || '');
             setEditPriority(String(todo.priority));
+            
+            const category = todo.category || '';
+            if (predefinedCategories.includes(category)) {
+                setEditSelectedCategory(category);
+                setEditCustomCategory('');
+            } else if (category) {
+                setEditSelectedCategory('Other');
+                setEditCustomCategory(category);
+            } else {
+                setEditSelectedCategory('');
+                setEditCustomCategory('');
+            }
         }
-    }, [isEditing, todo.text, todo.category, todo.dueDate, todo.priority]);
+    }, [isEditing, todo]);
 
     const handleUpdate = () => {
         if (editText.trim()) {
-            updateTodo(todo.id, editText.trim(), editCategory.trim(), editDueDate || null, parseInt(editPriority, 10));
-        } else {
-            setEditingId(null);
+            const finalCategory = editSelectedCategory === 'Other'
+                ? editCustomCategory.trim()
+                : editSelectedCategory;
+            updateTodo(todo.id, editText.trim(), finalCategory, editDueDate || null, parseInt(editPriority, 10));
         }
+        setEditingId(null);
     };
     
     const handleCancel = () => {
@@ -67,7 +82,8 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, toggleTodo, deleteTodo, updat
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
             handleUpdate();
         } else if (e.key === 'Escape') {
             handleCancel();
@@ -88,16 +104,39 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, toggleTodo, deleteTodo, updat
                         aria-label="Edit todo text"
                         autoFocus
                     />
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <input
-                            type="text"
-                            value={editCategory}
-                            onChange={(e) => setEditCategory(e.target.value)}
-                            placeholder="Category"
-                            className={`${inputStyles} text-sm`}
-                            onKeyDown={handleKeyDown}
-                            aria-label="Edit todo category"
-                        />
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:items-start">
+                        <div>
+                            <select
+                                value={editSelectedCategory}
+                                onChange={(e) => {
+                                    setEditSelectedCategory(e.target.value)
+                                    if (e.target.value !== 'Other') {
+                                        setEditCustomCategory('');
+                                    }
+                                }}
+                                className={`${inputStyles} text-sm`}
+                                onKeyDown={handleKeyDown}
+                                aria-label="Edit category"
+                            >
+                                <option value="">Select Category</option>
+                                <option value="Work">Work</option>
+                                <option value="Personal">Personal</option>
+                                <option value="Hobby">Hobby</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            {editSelectedCategory === 'Other' && (
+                                <input
+                                    type="text"
+                                    value={editCustomCategory}
+                                    onChange={(e) => setEditCustomCategory(e.target.value)}
+                                    placeholder="Custom category..."
+                                    className={`${inputStyles} text-sm mt-2`}
+                                    onKeyDown={handleKeyDown}
+                                    aria-label="Edit custom todo category"
+                                    required
+                                />
+                            )}
+                        </div>
                         <select
                             value={editPriority}
                             onChange={(e) => setEditPriority(e.target.value)}
@@ -135,40 +174,59 @@ const TodoItem: React.FC<TodoItemProps> = ({ todo, toggleTodo, deleteTodo, updat
     const DueDateDisplay = () => {
         if (!todo.dueDate) return null;
         
-        const dueDate = new Date(todo.dueDate);
-        const isOverdue = dueDate.getTime() < new Date().getTime() && !todo.completed;
+        try {
+            const dueDate = new Date(todo.dueDate);
+            // Check if the date is valid
+            if (isNaN(dueDate.getTime())) {
+                return null;
+            }
 
-        const formattedDate = dueDate.toLocaleString('en-US', {
-            month: 'short', 
-            day: 'numeric', 
-            hour: 'numeric', 
-            minute: '2-digit', 
-            hour12: true
-        }).replace(',', ' at');
+            const isOverdue = dueDate.getTime() < new Date().getTime() && !todo.completed;
 
-        return (
-            <div className={`flex items-center gap-1.5 text-xs whitespace-nowrap ${isOverdue ? 'text-red-400 font-semibold' : 'text-gray-400'}`}>
-                <CalendarIcon className="w-4 h-4" />
-                <span>{formattedDate}</span>
-            </div>
-        );
+            const formattedDate = dueDate.toLocaleString('en-US', {
+                month: 'short', 
+                day: 'numeric', 
+                hour: 'numeric', 
+                minute: '2-digit', 
+                hour12: true
+            }).replace(',', ' at');
+
+            return (
+                <div className={`flex items-center gap-1.5 text-xs whitespace-nowrap ${isOverdue ? 'text-red-400 font-semibold' : 'text-gray-400'}`}>
+                    <CalendarIcon className="w-4 h-4" />
+                    <span>{formattedDate}</span>
+                </div>
+            );
+        } catch (error) {
+            console.error("Error formatting due date:", error);
+            return null;
+        }
     };
 
     const CompletionDateDisplay = () => {
         if (!todo.completedAt) return null;
         
-        const completedDate = new Date(todo.completedAt);
-        const formattedDate = completedDate.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-        });
-        
-        return (
-            <div className="flex items-center gap-1.5 text-xs text-gray-400">
-                <CheckIcon className="w-4 h-4 text-green-400" />
-                <span>Completed: {formattedDate}</span>
-            </div>
-        );
+        try {
+            const completedDate = new Date(todo.completedAt);
+             if (isNaN(completedDate.getTime())) {
+                return null;
+            }
+
+            const formattedDate = completedDate.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+            });
+            
+            return (
+                <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                    <CheckIcon className="w-4 h-4 text-green-400" />
+                    <span>Completed: {formattedDate}</span>
+                </div>
+            );
+        } catch(error) {
+            console.error("Error formatting completion date:", error);
+            return null;
+        }
     };
 
     const PriorityDisplay = () => {
