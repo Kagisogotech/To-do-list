@@ -26,6 +26,7 @@ This project provides a simple, responsive, and user-friendly interface to help 
 ├── package.json
 ├── tsconfig.json
 └── README.md
+```
 🌐 Live Demo
 
 👉 To-Do List App
