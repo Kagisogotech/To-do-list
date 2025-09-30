@@ -208,7 +208,7 @@ const App: React.FC = () => {
                 )}
 
                  <footer className="text-center pt-6 mt-6 border-t border-gray-700/50 text-xs text-gray-500">
-                    Created by Kagiso
+                    Created by Kagiso Monene
                 </footer>
             </div>
         </div>
