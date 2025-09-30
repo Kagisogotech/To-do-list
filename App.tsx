@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Todo } from './types';
 import Header from './components/Header';
@@ -5,6 +6,7 @@ import TodoForm from './components/TodoForm';
 import TodoList from './components/TodoList';
 import History from './components/History';
 import AlarmNotification from './components/AlarmNotification';
+import NamePrompt from './components/NamePrompt';
 import { ArchiveBoxIcon, ClipboardListIcon } from './components/IconComponents';
 
 const App: React.FC = () => {
@@ -12,6 +14,8 @@ const App: React.FC = () => {
     const [editingId, setEditingId] = useState<number | null>(null);
     const [view, setView] = useState<'list' | 'history'>('list');
     const [alarmingTodo, setAlarmingTodo] = useState<Todo | null>(null);
+    const [userName, setUserName] = useState<string | null>(() => localStorage.getItem('userName'));
+
     const [alarmedTodoIds, setAlarmedTodoIds] = useState<number[]>(() => {
         try {
             const saved = localStorage.getItem('alarmedTodoIds');
@@ -26,9 +30,7 @@ const App: React.FC = () => {
         try {
             const storedTodos = localStorage.getItem('todos');
             if (storedTodos) {
-                // FIX: Add parentheses to correctly type parsedTodos as an array of objects.
                 const parsedTodos: (Omit<Todo, 'priority'> & { priority?: number })[] = JSON.parse(storedTodos);
-                // Add default priority for backward compatibility
                 const todosWithPriority = parsedTodos.map(todo => ({
                     ...todo,
                     priority: todo.priority || 2, // Default to Medium
@@ -85,6 +87,15 @@ const App: React.FC = () => {
 
         return () => clearInterval(intervalId);
     }, [activeTodos, alarmedTodoIds, alarmingTodo]);
+    
+    const handleNameSubmit = (name: string) => {
+        localStorage.setItem('userName', name);
+        setUserName(name);
+    };
+
+    if (!userName) {
+        return <NamePrompt onNameSubmit={handleNameSubmit} />;
+    }
 
     const addTodo = (text: string, category: string, dueDate: string | null, priority: number) => {
         const newTodo: Todo = {
@@ -154,7 +165,7 @@ const App: React.FC = () => {
         <div className="min-h-screen text-white flex items-center justify-center p-4 font-sans">
             {alarmingTodo && <AlarmNotification todo={alarmingTodo} onDismiss={dismissAlarm} />}
             <div className="w-full max-w-lg mx-auto bg-slate-800/50 backdrop-blur-lg shadow-2xl shadow-indigo-500/10 rounded-2xl p-6 md:p-8">
-                <Header />
+                <Header userName={userName} />
                 <TodoForm addTodo={addTodo} />
 
                 <div className="border-b border-slate-700/50 mt-8 mb-6 -mx-6 md:-mx-8">
@@ -197,7 +208,7 @@ const App: React.FC = () => {
                 )}
 
                  <footer className="text-center pt-6 mt-6 border-t border-gray-700/50 text-xs text-gray-500">
-                    Created by Kagiso Monene
+                    Created by Kagiso
                 </footer>
             </div>
         </div>
