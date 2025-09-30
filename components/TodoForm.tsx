@@ -7,23 +7,29 @@ interface TodoFormProps {
 
 const TodoForm: React.FC<TodoFormProps> = ({ addTodo }) => {
     const [text, setText] = useState('');
-    const [category, setCategory] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [customCategory, setCustomCategory] = useState('');
     const [dueDate, setDueDate] = useState('');
     const [priority, setPriority] = useState('2');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (text.trim()) {
-            addTodo(text.trim(), category.trim() || 'General', dueDate || null, parseInt(priority, 10));
+            const finalCategory = selectedCategory === 'Other' 
+                ? customCategory.trim() 
+                : selectedCategory;
+
+            addTodo(text.trim(), finalCategory || 'General', dueDate || null, parseInt(priority, 10));
             setText('');
-            setCategory('');
+            setSelectedCategory('');
+            setCustomCategory('');
             setDueDate('');
             setPriority('2');
         }
     };
     
-    const inputStyles = "bg-gray-700/50 border-2 border-gray-600 text-white placeholder-gray-400 rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-300";
-    const smallInputStyles = "bg-gray-700/50 border-2 border-gray-600 text-white placeholder-gray-400 rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-300 w-full text-sm";
+    const inputStyles = "w-full bg-gray-700/50 border-2 border-gray-600 text-white placeholder-gray-400 rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-300";
+    const smallInputStyles = `${inputStyles} text-sm`;
 
     return (
         <form onSubmit={handleSubmit} className="mb-6">
@@ -45,13 +51,18 @@ const TodoForm: React.FC<TodoFormProps> = ({ addTodo }) => {
                 </button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
-                <input
-                    type="text"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    placeholder="Category (e.g., Work)"
+                <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
                     className={smallInputStyles}
-                />
+                    aria-label="Task category"
+                >
+                    <option value="">Select Category</option>
+                    <option value="Work">Work</option>
+                    <option value="Personal">Personal</option>
+                    <option value="Hobby">Hobby</option>
+                    <option value="Other">Other</option>
+                </select>
                  <select
                     value={priority}
                     onChange={(e) => setPriority(e.target.value)}
@@ -71,6 +82,18 @@ const TodoForm: React.FC<TodoFormProps> = ({ addTodo }) => {
                     min={new Date().toISOString().slice(0, 16)}
                 />
             </div>
+             {selectedCategory === 'Other' && (
+                <div className="mt-3">
+                    <input
+                        type="text"
+                        value={customCategory}
+                        onChange={(e) => setCustomCategory(e.target.value)}
+                        placeholder="Type your custom category..."
+                        className={smallInputStyles}
+                        required
+                    />
+                </div>
+            )}
         </form>
     );
 };
